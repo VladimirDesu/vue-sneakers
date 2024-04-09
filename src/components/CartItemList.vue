@@ -3,17 +3,18 @@ import { inject } from 'vue'
 
 import CartItem from './CartItem.vue'
 
-const carts = inject('cart')
+const { cart, removeFromCart } = inject('cart')
 </script>
 
 <template>
   <div class="flex flex-col gap-4 mb-7">
     <CartItem
-      v-for="cart in carts"
-      :key="cart.id"
-      :title="cart.title"
-      :price="cart.price"
-      :imageUrl="cart.imageUrl"
+      v-for="item in cart"
+      :key="item.id"
+      :title="item.title"
+      :price="item.price"
+      :imageUrl="item.imageUrl"
+      @removeFromCart="() => removeFromCart(item)"
     />
   </div>
 </template>

@@ -1,9 +1,12 @@
 <script setup>
+
 defineProps({
   title: String,
   price: Number,
   imageUrl: String
 })
+
+const emit = defineEmits(['removeFromCart'])
 </script>
 
 <template>
@@ -15,7 +18,11 @@ defineProps({
 
       <div class="flex justify-between mt-2">
         <b>{{ price }} руб.</b>
-        <img class="opacity-40 hover:opacity-100 cursor-pointer transition" src="/close.svg" />
+        <img
+          @click="emit('removeFromCart')"
+          class="opacity-40 hover:opacity-100 cursor-pointer transition"
+          src="/close.svg"
+        />
       </div>
     </div>
   </div>

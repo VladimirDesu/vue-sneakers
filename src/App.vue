@@ -1,14 +1,31 @@
 <script setup>
-import { onMounted, ref, watch, reactive, provide } from 'vue'
+import { onMounted, ref, watch, reactive, provide, computed } from 'vue'
 import axios from 'axios'
 
 import Header from './components/Header.vue'
 import CardList from './components/CardList.vue'
 import Drawer from './components/Drawer.vue'
 
+const mainUrl = 'https://e89a320cd8447947.mokky.dev'
+const url = {
+  favourites: mainUrl + '/favourites',
+  orders: mainUrl + '/orders',
+  sneakers: mainUrl + '/sneakers'
+}
+
 const items = ref([])
 
 const cart = ref([])
+
+const isCreatingOrder = ref(false)
+
+const buttonDisabled = computed(() => {
+  return totalPrice.value ? (isCreatingOrder.value ? true : false) : true
+})
+
+const totalPrice = computed(() => cart.value.reduce((acc, item) => acc + item.price, 0))
+
+const vatPrice = computed(() => Math.round(totalPrice.value * 0.05))
 
 const drawerOpened = ref(false)
 
@@ -16,6 +33,22 @@ const filters = reactive({
   sortBy: 'title',
   searchQuery: ''
 })
+
+const createOrder = async () => {
+  isCreatingOrder.value = true
+  try {
+    const { data } = await axios.post(url.orders, {
+      items: cart.value,
+      totalPrice: totalPrice.value
+    })
+    cart.value = []
+    return data
+  } catch (err) {
+    console.log(err)
+  } finally {
+    isCreatingOrder.value = false
+  }
+}
 
 const onChangeSelect = (event) => {
   filters.sortBy = event.target.value
@@ -30,12 +63,20 @@ const toggleDrawer = () => {
 }
 
 const addToCart = (item) => {
+  cart.value.push(item)
+  item.isAdded = true
+}
+
+const removeFromCart = (item) => {
+  cart.value.splice(cart.value.indexOf(item), 1)
+  item.isAdded = false
+}
+
+const onClickPlus = (item) => {
   if (!item.isAdded) {
-    cart.value.push(item)
-    item.isAdded = true
+    addToCart(item)
   } else {
-    cart.value.splice(cart.value.indexOf(item), 1)
-    item.isAdded = false
+    removeFromCart(item)
   }
 }
 
@@ -47,13 +88,13 @@ const addToFavourite = async (item) => {
       }
       item.isFavourite = true
 
-      const { data } = await axios.post('https://e89a320cd8447947.mokky.dev/favourites', obj)
+      const { data } = await axios.post(url.favourites, obj)
 
       item.favouriteId = data.id
     } else {
       item.isFavourite = false
 
-      await axios.delete(`https://e89a320cd8447947.mokky.dev/favourites/${item.favouriteId}`)
+      await axios.delete(`${url.favourites}/${item.favouriteId}`)
 
       item.favouriteId = null
     }
@@ -64,7 +105,7 @@ const addToFavourite = async (item) => {
 
 const fetchFavorites = async () => {
   try {
-    const { data: favourites } = await axios.get('https://e89a320cd8447947.mokky.dev/favourites')
+    const { data: favourites } = await axios.get(url.favourites)
 
     items.value = items.value.map((item) => {
       const favourite = favourites.find((favourite) => favourite.parentId === item.id)
@@ -93,8 +134,7 @@ const fetchItems = async () => {
     if (filters.searchQuery) {
       params.title = `*${filters.searchQuery}*`
     }
-
-    const { data } = await axios.get('https://e89a320cd8447947.mokky.dev/sneakers', {
+    const { data } = await axios.get(url.sneakers, {
       params
     })
     items.value = data
@@ -110,14 +150,32 @@ onMounted(async () => {
 
 watch(filters, fetchItems)
 
+watch(cart, () => {
+  items.value = items.value.map((item) => ({
+    ...item,
+    isAdded: false
+  }))
+})
+
 provide('toggleDrawer', toggleDrawer)
-provide('cart', cart)
+provide('cart', {
+  cart,
+  addToCart,
+  removeFromCart
+})
 </script>
 
 <template>
-  <Drawer v-if="drawerOpened" @toggleDrawer="toggleDrawer" />
+  <Drawer
+    v-if="drawerOpened"
+    @toggleDrawer="toggleDrawer"
+    @createOrder="createOrder"
+    :totalPrice="totalPrice"
+    :buttonDisabled="buttonDisabled"
+    :vatPrice="vatPrice"
+  />
   <div class="bg-white w-4/5 m-auto rounded-xl shadow-xl mt-14">
-    <Header @toggleDrawer="toggleDrawer" />
+    <Header @toggleDrawer="toggleDrawer" :totalPrice="totalPrice" />
     <div class="p-10">
       <div class="flex justify-between mb-8">
         <h2 class="text-3xl font-bold">Все кроссовки</h2>
@@ -144,7 +202,7 @@ provide('cart', cart)
         </div>
       </div>
 
-      <CardList :items="items" @addToFavourite="addToFavourite" @addToCart="addToCart" />
+      <CardList :items="items" @addToFavourite="addToFavourite" @addToCart="onClickPlus" />
     </div>
   </div>
 </template>

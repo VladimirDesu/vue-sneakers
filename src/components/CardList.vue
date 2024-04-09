@@ -1,7 +1,7 @@
 <script setup>
 import Card from './Card.vue'
 
-const props = defineProps({
+defineProps({
   items: Array
 })
 
