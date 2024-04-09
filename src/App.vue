@@ -19,9 +19,9 @@ const cart = ref([])
 
 const isCreatingOrder = ref(false)
 
-const buttonDisabled = computed(() => {
-  return totalPrice.value ? (isCreatingOrder.value ? true : false) : true
-})
+const buttonDisabled = computed(() =>
+  totalPrice.value ? (isCreatingOrder.value ? true : false) : true
+)
 
 const totalPrice = computed(() => cart.value.reduce((acc, item) => acc + item.price, 0))
 
@@ -144,6 +144,14 @@ const fetchItems = async () => {
 }
 
 onMounted(async () => {
+  const localCart = localStorage.getItem('cart')
+  cart.value = localCart ? JSON.parse(localCart) : []
+
+  items.value = items.value.map((item) => ({
+    ...items,
+    isAdded: cart.value.some((cartItem) => cartItem.id === item.id)
+  }))
+
   await fetchItems()
   await fetchFavorites()
 })
@@ -156,6 +164,14 @@ watch(cart, () => {
     isAdded: false
   }))
 })
+
+watch(
+  cart,
+  () => {
+    localStorage.setItem('cart', JSON.stringify(cart.value))
+  },
+  { deep: true }
+)
 
 provide('toggleDrawer', toggleDrawer)
 provide('cart', {
