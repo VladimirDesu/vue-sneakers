@@ -12,12 +12,12 @@ const app = createApp(App)
 const baseUrl = import.meta.env.BASE_URL
 
 const routes = [
-  {path: `${baseUrl}`, name: 'Home', component: Home},
-  {path: `${baseUrl}/favourites`, name: 'Favourites', component: Favourites}
+  { path: `/`, name: 'Home', component: Home },
+  { path: `/favourites`, name: 'Favourites', component: Favourites }
 ]
 
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHistory(`${baseUrl}`),
   routes
 })
 
