@@ -54,7 +54,7 @@ onMounted(async () => {
       imageUrl="/emoji-1.png"
       description="Вы ничего не добавляли в закладки"
     />
-    <RouterLink to="/">
+    <RouterLink :to="{ name: 'Home' }">
       <button
         class="mx-auto mt-4 relative transition bg-lime-500 w-full rounded-xl py-3 text-white disabled:bg-slate-300 hover:bg-lime-600 active:bg-lime-700"
       >
@@ -64,7 +64,7 @@ onMounted(async () => {
     </RouterLink>
   </div>
   <div v-else>
-    <h2 class="text-3xl font-bold">Мои закладки</h2>
+    <h2 class="mb-8 text-3xl font-bold">Мои закладки</h2>
 
     <CardList :items="favourites" @addToFavourite="deleteFavourite" @addToCart="onClickPlus" />
   </div>

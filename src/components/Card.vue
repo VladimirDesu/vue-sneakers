@@ -8,6 +8,8 @@ defineProps({
   isLiked: Boolean,
   isAdded: Boolean
 })
+
+const baseUrl = import.meta.env.BASE_URL
 </script>
 
 <template>
@@ -16,11 +18,11 @@ defineProps({
   >
     <img
       @click="onClickLike"
-      :src="isLiked ? '/like-2.svg' : '/like-1.svg'"
+      :src="`${baseUrl}${isLiked ? '/like-2.svg' : '/like-1.svg'}`"
       alt="Like 1"
       class="absolute top-8 left-8"
     />
-    <img :src="imageUrl" alt="Sneaker" />
+    <img :src="baseUrl + imageUrl" alt="Sneaker" />
     <p class="mt-2">{{ title }}</p>
 
     <div class="flex justify-between mt-5">
@@ -29,7 +31,7 @@ defineProps({
         <b>{{ price }} руб.</b>
       </div>
 
-      <img @click="onClickPlus" :src="isAdded ? '/checked.svg' : '/plus.svg'" alt="Plus" />
+      <img @click="onClickPlus" :src="`${baseUrl}${isAdded ? '/checked.svg' : '/plus.svg'}`" alt="Plus" />
     </div>
   </div>
 </template>

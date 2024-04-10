@@ -1,17 +1,18 @@
 <script setup>
-
 defineProps({
   title: String,
   price: Number,
   imageUrl: String
 })
 
+const baseUrl = import.meta.env.BASE_URL
+
 const emit = defineEmits(['removeFromCart'])
 </script>
 
 <template>
   <div class="flex items-center border border-slate-200 p-4 rounded-xl gap-4">
-    <img class="w-16 h-16" :src="imageUrl" alt="Sneaker" />
+    <img class="w-16 h-16" :src="baseUrl + imageUrl" alt="Sneaker" />
 
     <div class="flex flex-col w-full">
       <p>{{ title }}</p>
